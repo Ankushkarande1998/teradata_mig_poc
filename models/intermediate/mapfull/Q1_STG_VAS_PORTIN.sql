@@ -1,11 +1,25 @@
 --file 14
 {{ config(
-    materialized='table',
-    pre_hook="DROP TABLE IF EXISTS {{ this }}"
+    materialized='incremental',
+    incremental_strategy='append',
+    unique_key='PK_ID',
+    merge_update_columns=['ACCESS_NUMBER', 'LINK_ID', 'ORIGIN_COUNTRY', 'PORT_IN', 'START_DATE', 'END_DATE'],
+    pre_hook=["DROP TABLE IF EXISTS {{ this }};",
+                "CREATE TABLE IF NOT EXISTS {{this}} (
+                    PK_ID BIGINT NOT NULL PRIMARY KEY,
+                    ACCESS_NUMBER STRING NOT NULL,
+                    LINK_ID INT,
+                    ORIGIN_COUNTRY STRING,
+                    PORT_IN INT,
+                    START_DATE TIMESTAMP,
+                    END_DATE TIMESTAMP
+                ) USING DELTA;
+        "
+    ]
     ) 
 }}
 
-SELECT  -1 AS PK_ID,
+SELECT  ROW_NUMBER() OVER (ORDER BY ACCESS_NUMBER) AS PK_ID,
         R1.ACCESS_NUMBER,
         R1.LINK_ID,
         R1.ORIGIN_COUNTRY,

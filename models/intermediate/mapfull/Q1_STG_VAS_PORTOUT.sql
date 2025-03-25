@@ -1,7 +1,21 @@
 --file 18
 {{ config(
-    materialized='table',
-    pre_hook="DROP TABLE IF EXISTS {{ this }}"
+    materialized='incremental',
+    incremental_strategy='append',
+    unique_key='PK_ID',
+    merge_update_columns=['ACCESS_NUMBER', 'LINK_ID', 'ORIGIN_COUNTRY', 'PORT_IN', 'START_DATE', 'END_DATE'],
+    pre_hook=["DROP TABLE IF EXISTS {{ this }};",
+                "CREATE TABLE IF NOT EXISTS {{this}} (
+                    PK_ID BIGINT ,
+                    ACCESS_NUMBER STRING NOT NULL,
+                    LINK_ID INT,
+                    ORIGIN_COUNTRY STRING,
+                    PORT_OUT INT,
+                    START_DATE TIMESTAMP,
+                    END_DATE TIMESTAMP
+                ) USING DELTA;
+        "
+    ]
     ) 
 }}
 
@@ -9,7 +23,7 @@
 -- CALL_YEAR_MOTH + ACCESS_NUMBER + PORT_OUT_FLAG (Meaning => this number has been ported_out during this month)
 -- (to be checked in the future, if needed) otherwise the QLik Developper needs to do a ad-hoc query directly 
 -- ino the VAS source Table
-SELECT  -1 AS PK_ID,
+SELECT  ROW_NUMBER() OVER (ORDER BY ACCESS_NUMBER) AS PK_ID,
         R1.ACCESS_NUMBER,
         R1.LINK_ID,
         R1.ORIGIN_COUNTRY,
