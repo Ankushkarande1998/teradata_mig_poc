@@ -2,7 +2,8 @@
   config(
    materialized='incremental',
    incremental_strategy='append', 
-   unique_key=['CUST_OPER_CD', 'PRODUCT', 'ACCESS_NUMBER']
+   unique_key=['CUST_OPER_CD', 'PRODUCT', 'ACCESS_NUMBER'],
+   post_hook=" {{ drop_tables_by_prefix('q2_')}}"
 ) 
 }}
 

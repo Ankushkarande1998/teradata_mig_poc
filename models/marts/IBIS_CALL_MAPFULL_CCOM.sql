@@ -2,7 +2,8 @@
   config(
    materialized='incremental',
    incremental_strategy='append', 
-   unique_key=['IN_CDR_FILE_ID','IN_CDR_SERIAL_NR','OUT_CDR_FILE_ID', 'OUT_CDR_SERIAL_NR']
+   unique_key=['IN_CDR_FILE_ID','IN_CDR_SERIAL_NR','OUT_CDR_FILE_ID', 'OUT_CDR_SERIAL_NR'],
+   post_hook=" {{ drop_tables_by_prefix('q2_')}}"
 ) 
 }}
 
