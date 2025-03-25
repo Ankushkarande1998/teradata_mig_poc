@@ -1,13 +1,17 @@
 {{ 
   config(
    materialized='incremental',
-   incremental_strategy='append', 
-   unique_key=['IN_CDR_FILE_ID','IN_CDR_SERIAL_NR','OUT_CDR_FILE_ID', 'OUT_CDR_SERIAL_NR'],
-   post_hook=" {{ drop_tables_by_prefix('q2_')}}"
+   incremental_strategy='merge', 
+   table_format='delta', 
+   table_properties={'delta.enableIcebergCompatV2' : 'true',
+                      'delta.universalFormat.enabledFormats' : 'iceberg',
+                      'delta.columnMapping.mode' : 'name'
+                    },
+   unique_key=['IN_CDR_FILE_ID','IN_CDR_SERIAL_NR','OUT_CDR_FILE_ID', 'OUT_CDR_SERIAL_NR'] ,
+   post_hook=" {{ drop_tables_by_prefix('q1_')}}"
 ) 
 }}
 
 select * from {{ref('Q1_IBIS_CALL_MAPFULL_CCOM_RATING_ORIGINAL_PRODUCT')}}
--- In case of only one sql file we need to refer to Q2 table
 
 
