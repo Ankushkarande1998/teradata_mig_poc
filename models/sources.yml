@@ -1,0 +1,59 @@
+version: 2
+
+sources:
+  - name: DWHIBIS
+    description: "Parquet files stored in S3"
+    database: dbk_test_mart
+    schema: DWHIBIS1
+    tables:
+      - name: IBIS_CALL
+        description: "User data in parquet format"
+      - name: IBIS_CALL_MAPFULL_IO
+        description: "Description for IBIS_CALL_MAPFULL_IO"
+      - name: IBIS_CALL_MAPFULL_UNM
+        description: "Description for IBIS_CALL_MAPFULL_UNM"
+      - name: IBIS_RATING
+        description: "Description for IBIS_RATING"
+      - name: TRUNKGROUP_TERM
+        description: "Description for TRUNKGROUP_TERM"
+      - name: IBIS_SUB_SERVICE
+        description: "Description for IBIS_SUB_SERVICE"
+      - name: IBIS_B_EXCHANGE_RATE_DAY
+        description: "Description for IBIS_B_EXCHANGE_RATE_DAY"
+      - name: CBU_RD_SPLIT_SUB_SERVICE
+        description: "Description for CBU_RD_SPLIT_SUB_SERVICE"
+      - name: VAS_EXT_DM_RPT
+        description: "Description for VAS_EXT_DM_RPT"
+      - name: VAS_EXT_DM_RPT_SRV
+        description: "Description for VAS_EXT_DM_RPT_SRV"
+      - name: VAS_DWH_ABS_EXPORT
+        description: "Description for VAS_DWH_ABS_EXPORT"
+      - name: VAS_CDR_CUSTOMER_ROUTES
+        description: "Description for VAS_CDR_CUSTOMER_ROUTES"
+      - name: IBIS_B_OPERATOR
+        description: "Description for IBIS_B_OPERATOR"
+      - name: IBIS_TRUNK_GROUP_CLASS
+        description: "Description for IBIS_TRUNK_GROUP_CLASS"
+      - name: IBIS_CURRENCY
+        description: "Description for IBIS_CURRENCY"
+      - name: IBIS_B_TIME_DIFF_INTERVAL  
+        description: "Description for IBIS_B_TIME_DIFF_INTERVAL"
+      - name: IBIS_ACCESS_AREA  
+        description: "Description for IBIS_ACCESS_AREA"
+      - name: CDO_IN_MIN_PRICE  
+        description: "Description for CDO_IN_MIN_PRICE"
+      - name: IBIS_COUNTRY
+        description: "Description for IBIS_COUNTRY"
+      - name: VAS_EXT_MIN_REF_PRICES
+        description: "Description for VAS_EXT_MIN_REF_PRICES"
+    
+      
+  - name: DWHODS
+    description: "Additional schema in S3"
+    database: dbk_test_mart
+    schema: DWHODS1
+    tables:
+      - name: CALENDAR
+        description: "Description for CALENDAR"
+
+

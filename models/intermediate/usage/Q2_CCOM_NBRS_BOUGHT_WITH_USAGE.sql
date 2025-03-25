@@ -1,0 +1,73 @@
+{{ config(
+    materialized='table',
+    pre_hook="DROP TABLE IF EXISTS {{ this }}"
+    ) 
+}}
+
+SELECT  CUST_OPER_CD,
+        CUST_CTRY_CD,
+        MONTHSTART,
+        PRODUCT,
+        ACCESS_NUMBER
+        --COUNT(DISTINCT ACCESS_NUMBER) AS DISTINCT_NRS
+FROM 
+    (
+    SELECT  CUST.OPER_CD AS CUST_OPER_CD,
+            CUST.CTRY_CD AS CUST_CTRY_CD,
+            --CC.CALL_DT - EXTRACT(DAY FROM CALL_DT) + 1 AS MONTHSTART,
+            TRUNC(CC.CALL_DT, 'MONTH') AS MONTHSTART,
+            CASE WHEN CC.PRODUCT = 'SIPT' 
+                    THEN 'IBN'
+                    ELSE CC.PRODUCT
+            END AS PRODUCT,
+            IN_VAS_ACCESS_NUMBER AS ACCESS_NUMBER
+    FROM {{ref('IBIS_CALL_MAPFULL_CCOM')}} CC
+    JOIN {{ref('IBIS_B_OPERATOR')}} CUST
+        /*ON CASE WHEN DIRECTION = 'INBOUND' 
+                  AND (IN_DEST_SUB_SVC_ID NOT IN (2107838,2113163,2113162)
+                  AND OUT_DEST_SUB_SVC_ID NOT IN (2107838,2113163,2113162))
+              THEN IN_DEST_OPER_ID 
+              ELSE TRANSM_OPER_ID 
+           END --- To define the customer
+         */
+         ON CC.CUST_OPER_ID = CUST.OPER_ID
+    JOIN {{ref('VAS_EXT_DM_RPT')}} PROV_TBL
+        ON CC.IN_VAS_ACCESS_NUMBER = PROV_TBL.ACCESS_NUMBER
+       AND CC.CALL_DT BETWEEN START_DATE AND END_DATE 
+       AND PROV_TBL.NUMBER_STATUS = 'PROVISIONED'
+    WHERE 1=1
+    --AND CC.CALL_DT>='2023-02-01' AND CALL_DT<='2023-07-31'
+       AND CC.PRODUCT IN ('IBN','SCS','ITFS','UIFN','SIPT','GMN')
+    GROUP BY 1,2,3,4,5
+
+    UNION ALL
+    --QUERY FOR B NR
+
+    SELECT  CUST.OPER_CD,
+            CUST.CTRY_CD,
+            --CC.CALL_DT - EXTRACT(DAY FROM CALL_DT) + 1 AS MONTHSTART,
+            TRUNC(CC.CALL_DT, 'MONTH') AS MONTHSTART,
+            CASE WHEN CC.PRODUCT = 'SIPT'
+                    THEN 'IBN'
+                    ELSE CC.PRODUCT
+            END AS PRODUCT,
+            OUT_VAS_ACCESS_NUMBER AS ACCESS_NUMBER
+    FROM {{ref('IBIS_CALL_MAPFULL_CCOM')}} CC
+    JOIN {{ref('IBIS_B_OPERATOR')}} CUST
+        /*ON CASE WHEN DIRECTION = 'INBOUND'
+                AND (IN_DEST_SUB_SVC_ID NOT IN (2107838,2113163,2113162)
+                  AND OUT_DEST_SUB_SVC_ID NOT IN (2107838,2113163,2113162))
+               THEN IN_DEST_OPER_ID 
+            ELSE TRANSM_OPER_ID
+            END --- To define the customer */
+        ON CC.CUST_OPER_ID = CUST.OPER_ID --- To define the customer
+    JOIN {{ref('VAS_EXT_DM_RPT')}} PROV_TBL
+        ON CC.OUT_VAS_ACCESS_NUMBER = PROV_TBL.ACCESS_NUMBER
+       AND CC.CALL_DT BETWEEN START_DATE AND END_DATE
+       AND PROV_TBL.NUMBER_STATUS = 'PROVISIONED'
+    WHERE 1=1
+       --AND CC.CALL_DT>='2023-02-01' AND CALL_DT<='2023-07-31'
+       AND CC.PRODUCT IN ('IBN','SCS','ITFS','UIFN','SIPT','GMN')
+    GROUP BY 1,2,3,4,5
+    ) T1
+GROUP BY 1,2,3,4,5

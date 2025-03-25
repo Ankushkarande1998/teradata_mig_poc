@@ -1,0 +1,149 @@
+-- File: 1
+{{ config(
+    materialized='table',
+    pre_hook="DROP TABLE IF EXISTS {{ this }}"
+    ) 
+}}
+
+
+SELECT    MIO.CALL_DT,            MIO.IN_CDR_FILE_ID,        MIO.IN_CDR_SERIAL_NR,
+          MIO.IN_SEGMENT_DT,      MIO.OUT_CDR_FILE_ID,       MIO.OUT_CDR_SERIAL_NR,
+          MIO.OUT_SEGMENT_DT,     MIO.MAP_STATUS,            MIO.TRANSM_OPER_ID,
+          MIO.I_TGC_ID,           MIO.RECV_OPER_ID,          MIO.O_TGC_ID,
+          MIO.IN_DEST_OPER_ID,    MIO.OUT_DEST_OPER_ID,
+          MIO.CALL_SET_UP_DURATION,
+          MIO.CALL_DURATION_TM,   MIO.ADD_ORIG_OPER_ID,      MIO.DIALLED_NR,
+          MIO.ROUTED_NR,          MIO.A_NR,                  MIO.IN_DEST_SUB_SVC_ID,
+          MIO.OUT_DEST_SUB_SVC_ID,
+          CASE WHEN IIC.VAS_DIRECTION IS NULL AND MIO.DEST_SUB_SVC_CD IN ('FF/997', 'FF/998', 'FF/999')
+                 THEN 'INBOUND'
+                 ELSE IIC.VAS_DIRECTION
+          END AS IN_VAS_DIRECTION,
+
+          CASE WHEN IIC.VAS_DIRECTION = 'INBOUND' AND MIO.DEST_SUB_SVC_CD = 'FF800'
+                   THEN 'FF800'
+              WHEN IIC.VAS_DIRECTION IS NULL AND MIO.DEST_SUB_SVC_CD IN ('FF/997', 'FF/998', 'FF/999')
+                   THEN 'ITFS'
+                   ELSE IIC.VAS_PRODUCT
+          END AS IN_VAS_PRODUCT,
+
+          IIC.VAS_ACCESS_NUMBER  AS IN_VAS_ACCESS_NUMBER,
+          IIC.VAS_CUSTOMER_ROUTING_NUMBER AS IN_VAS_CUSTOMER_ROUTING_NUMBER,
+          IIC.VAS_B_NUMBER    AS IN_VAS_B_NUMBER,
+          IIC.VAS_B_NUMBER_CTRY_CD AS IN_VAS_B_NUMBER_CTRY_CD,
+
+          CASE WHEN OIC.VAS_DIRECTION IS NULL AND MIO.DEST_SUB_SVC_CD IN ('FF/997', 'FF/998', 'FF/999')
+                    THEN 'INBOUND'
+                    ELSE OIC.VAS_DIRECTION
+          END AS OUT_VAS_DIRECTION,
+
+          CASE WHEN OIC.VAS_DIRECTION = 'INBOUND' AND MIO.DEST_SUB_SVC_CD = 'FF800'
+                  THEN 'FF800'
+               WHEN OIC.VAS_DIRECTION IS NULL AND MIO.DEST_SUB_SVC_CD IN ('FF/997', 'FF/998', 'FF/999')
+                  THEN 'ITFS'
+                  ELSE OIC.VAS_PRODUCT
+          END AS OUT_VAS_PRODUCT,
+
+          OIC.VAS_ACCESS_NUMBER  AS OUT_VAS_ACCESS_NUMBER,
+          OIC.VAS_CUSTOMER_ROUTING_NUMBER AS OUT_VAS_CUSTOMER_ROUTING_NUMBER,
+          OIC.VAS_B_NUMBER    AS OUT_VAS_B_NUMBER,
+          OIC.VAS_B_NUMBER_CTRY_CD AS OUT_VAS_B_NUMBER_CTRY_CD,
+
+          OIC.GLOBAL_CALL_ID AS OUT_GLOBAL_CALL_ID,
+          IIC.GLOBAL_CALL_ID AS IN_GLOBAL_CALL_ID,
+
+          {{ format_load_dt() }}AS LOAD_DT,
+          MIO.BEARER,
+          MIO.SALES_DEST_DIALLED_NR,
+          MIO.SALES_DEST_ROUTED_NR,
+          MIO.DEST_SUB_SVC_CD,
+          MIO.FIX_MOBILE,
+          MIO.IN_DEST_ACCESS_AREA_ID,     MIO.OUT_DEST_ACCESS_AREA_ID,
+          MIO.ROUTING_DEST_DIALLED_NR,    MIO.ROUTING_DEST_ROUTED_NR
+FROM
+    (
+     SELECT A.CALL_DT,                A.IN_CDR_FILE_ID,             A.IN_CDR_SERIAL_NR,
+            A.IN_SEGMENT_DT,          A.OUT_CDR_FILE_ID,            A.OUT_CDR_SERIAL_NR,
+            A.OUT_SEGMENT_DT,         A.MAP_STATUS,                 A.TRANSM_OPER_ID,
+            A.I_TGC_ID,               A.RECV_OPER_ID,               A.O_TGC_ID,
+            A.IN_DEST_OPER_ID,        A.OUT_DEST_OPER_ID,
+            A.OUT_TRUNK,              A.ORIGINAL_IN_TRUNK,          A.CALL_SET_UP_DURATION,
+            A.CALL_DURATION_TM,       A.ADD_ORIG_OPER_ID,           A.DIALLED_NR,
+            A.ROUTED_NR,              A.A_NR,                       A.IN_DEST_SUB_SVC_ID,
+            A.OUT_DEST_SUB_SVC_ID,    A.BEARER,                     A.SALES_DEST_DIALLED_NR,
+            A.SALES_DEST_ROUTED_NR,   B.SUB_SVC_CD AS DEST_SUB_SVC_CD,
+            B.FIX_MOBILE,             A.IN_DEST_ACCESS_AREA_ID,     A.OUT_DEST_ACCESS_AREA_ID,
+            A.ROUTING_DEST_DIALLED_NR,                              A.ROUTING_DEST_ROUTED_NR
+    FROM {{ ref( 'IBIS_CALL_MAPFULL_IO') }} A
+    LEFT OUTER JOIN {{ ref( 'CBU_RD_SPLIT_SUB_SERVICE') }} B
+       ON COALESCE(A.IN_DEST_SUB_SVC_ID, A.OUT_DEST_SUB_SVC_ID) = B.SUB_SVC_ID
+    WHERE A.CALL_DT BETWEEN {{ get_date_sub("'2024-06-26'", 31) }} AND {{ get_date_sub("'2024-06-26'", 1) }}
+    --WHERE A.CALL_DT = '2025-03-11' (DATE)
+       AND (
+            (A.IN_EXCHANGE_ID =  2101134 OR A.OUT_EXCHANGE_ID =  2101134) --CCOM
+            OR
+            (B.SUB_SVC_CD LIKE ANY ('%IFT%','%FF%','%SCS%','%IGEO%','FRING','GMN%'))
+            )
+       AND NOT (A.I_TGC_ID = 804 OR A.O_TGC_ID = 805) 
+
+       -- 17/01/2024 - Attention this is a NOT clause
+       -- so we filter all the CDRs BHN + DEST_OPER = BICS (Except for BELGIUM) + RECEIVING = BEL/BICS
+       AND NOT (A.IN_DEST_OPER_ID IN 
+                    (SELECT OPER_ID FROM DWHIBIS.IBIS_B_OPERATOR
+                     WHERE OPER_CD = 'BICS' AND CTRY_CD <> 'BEL'
+                     )
+               AND A.I_TGC_ID = 654 -- BHN
+               AND RECV_OPER_ID = 2113850 -- BEL/BICS
+               )
+    UNION
+
+    SELECT  A.CALL_DT,                A.IN_CDR_FILE_ID,             A.IN_CDR_SERIAL_NR,
+            A.IN_SEGMENT_DT,          A.OUT_CDR_FILE_ID,            A.OUT_CDR_SERIAL_NR,
+            A.OUT_SEGMENT_DT,         A.MAP_STATUS,                 A.TRANSM_OPER_ID,
+            A.I_TGC_ID,               A.RECV_OPER_ID,               A.O_TGC_ID,
+            A.IN_DEST_OPER_ID,        A.OUT_DEST_OPER_ID,
+            A.OUT_TRUNK,              A.ORIGINAL_IN_TRUNK,          A.CALL_SET_UP_DURATION,
+            A.CALL_DURATION_TM,       A.ADD_ORIG_OPER_ID,           A.DIALLED_NR,
+            A.ROUTED_NR,              A.A_NR,                       A.IN_DEST_SUB_SVC_ID,
+            A.OUT_DEST_SUB_SVC_ID,    A.BEARER,                     A.SALES_DEST_DIALLED_NR,
+            A.SALES_DEST_ROUTED_NR,   B.SUB_SVC_CD AS DEST_SUB_SVC_CD,
+            B.FIX_MOBILE,             A.IN_DEST_ACCESS_AREA_ID,     A.OUT_DEST_ACCESS_AREA_ID,
+            A.ROUTING_DEST_DIALLED_NR,                              A.ROUTING_DEST_ROUTED_NR
+    FROM {{ ref( 'IBIS_CALL_MAPFULL_UNM') }} A
+    LEFT OUTER JOIN {{ ref('CBU_RD_SPLIT_SUB_SERVICE') }} B
+       ON COALESCE(A.IN_DEST_SUB_SVC_ID, A.OUT_DEST_SUB_SVC_ID) = B.SUB_SVC_ID
+    WHERE A.CALL_DT BETWEEN {{ get_date_sub("'2024-06-26'", 31) }} AND {{ get_date_sub("'2024-06-26'", 1) }}
+       AND (
+            (A.IN_EXCHANGE_ID =  2101134 OR A.OUT_EXCHANGE_ID =  2101134) --CCOM
+            OR
+            (B.SUB_SVC_CD LIKE ANY ('%IFT%','%FF%','%SCS%','%IGEO%','FRING','GMN%'))
+            )
+       AND NOT (A.I_TGC_ID = 804 OR A.O_TGC_ID = 805)
+
+       -- 17/01/2024 - Attention this is a NOT clause
+       -- so we filter all the CDRs BHN + DEST_OPER = BICS (Except for BELGIUM) + RECEIVING = BEL/BICS
+       AND NOT (A.IN_DEST_OPER_ID IN 
+                    (SELECT OPER_ID FROM DWHIBIS.IBIS_B_OPERATOR
+                     WHERE OPER_CD = 'BICS' AND CTRY_CD <> 'BEL'
+                     )
+               AND A.I_TGC_ID = 654 -- BHN
+               AND RECV_OPER_ID = 2113850 -- BEL/BICS
+               )
+    ) MIO
+LEFT OUTER JOIN {{ ref( 'IBIS_CALL') }} IIC
+    ON IIC.SEGMENT_DT BETWEEN {{ get_date_sub("'2024-06-26'", 32) }} AND {{ get_date_sub("'2024-06-26'", 1) }}
+   AND IIC.CALL_DT BETWEEN {{ get_date_sub("'2024-06-26'", 31) }} AND {{ get_date_sub("'2024-06-26'", 1) }}
+   AND IIC.CDR_SERIAL_NR = COALESCE(MIO.IN_CDR_SERIAL_NR, 1)
+   AND IIC.CDR_FILE_ID = COALESCE(MIO.IN_CDR_FILE_ID,1)
+   AND IIC.SEGMENT_DT = COALESCE(MIO.IN_SEGMENT_DT,CAST('1900-01-01'AS DATE))
+   AND IIC.MAIN_SVC_ID = 22
+
+LEFT OUTER JOIN {{ ref( 'IBIS_CALL') }} OIC
+    ON OIC.SEGMENT_DT BETWEEN {{ get_date_sub("'2024-06-26'", 32) }} AND {{ get_date_sub("'2024-06-26'", 1) }}
+   AND OIC.CALL_DT BETWEEN {{ get_date_sub("'2024-06-26'", 31) }} AND {{ get_date_sub("'2024-06-26'", 1) }}
+   AND OIC.CDR_SERIAL_NR = COALESCE(MIO.OUT_CDR_SERIAL_NR, 1)
+   AND OIC.CDR_FILE_ID = COALESCE(MIO.OUT_CDR_FILE_ID,1)
+   AND OIC.SEGMENT_DT = COALESCE(MIO.OUT_SEGMENT_DT,CAST('1900-01-01' AS DATE))
+   AND OIC.MAIN_SVC_ID = 22
+
+

@@ -1,0 +1,19 @@
+version: 2
+
+models:
+  - name: ibis_call_mapfull_ccom
+    description: "Table containing call mapping details with revenue and cost tracking."
+    columns:
+      - name: call_dt
+        description: "Call date"
+        tests:
+          - not_null
+
+  - name: ccom_nbrs_bought_with_usage
+    description: "This table stores customer operation codes, country codes, product details, and access numbers by month."
+    columns:
+      - name: cust_oper_cd
+        description: "Customer operation code"
+        tests:
+          - not_null
+          - unique

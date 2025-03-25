@@ -1,0 +1,74 @@
+databricks_transformation:
+  target: dev
+  outputs:
+   dev:
+      type: databricks
+      catalog: dbk_test_mart
+      schema: default
+      host: dbc-79ebbc89-5c9b.cloud.databricks.com
+      http_path: /sql/1.0/warehouses/ff6412facf18195d
+      token: dapi24504d70f9482425e58edf9f9124a964
+      threads: 4
+      endpoint: sql
+      method: http
+
+  prod:
+      type: databricks
+      catalog: sample-poc
+      schema: default
+      host: test
+      http_path: /sql/1.0/warehouses/test
+      token: test
+      threads: 4
+      endpoint: sql
+      method: http
+
+redshift_transformation:
+  target: dev
+  outputs:
+    dev:
+      type: redshift
+      host: your-redshift-cluster.us-east-1.redshift.amazonaws.com
+      user: your_user
+      password: your_password
+      port: 5439
+      dbname: prod_db
+      schema: public
+      threads: 4
+      method: database
+
+    prod:
+      type: redshift
+      host: your-redshift-cluster.us-east-1.redshift.amazonaws.com
+      user: your_user
+      password: your_password
+      port: 5439
+      dbname: prod_db
+      schema: public
+      threads: 4
+      method: database
+
+starburst_transformation:
+  target: dev
+  outputs:
+    dev:
+      type: trino
+      host: your-starburst-host
+      port: 8080
+      user: your_user
+      password: your_password
+      catalog: hive
+      schema: default
+      threads: 4
+      method: http
+
+    prod:
+      type: trino
+      host: your-starburst-host
+      port: 8080
+      user: your_user
+      password: your_password
+      catalog: hive
+      schema: production
+      threads: 4
+      method: http

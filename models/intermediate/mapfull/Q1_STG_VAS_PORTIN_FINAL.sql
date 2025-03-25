@@ -1,0 +1,25 @@
+--file 15
+{{ config(
+    materialized='table',
+    pre_hook="DROP TABLE IF EXISTS {{ this }}"
+    ) 
+}}
+
+-- INSERT DATA THAT IS NOT OVERLAPPED
+
+SELECT * FROM {{ref('Q1_STG_VAS_PORTIN')}}
+WHERE (ACCESS_NUMBER, ORIGIN_COUNTRY, START_DATE, END_DATE) NOT IN
+    (
+    SELECT  T.ACCESS_NUMBER,
+            T.ORIGIN_COUNTRY,
+            T.START_DATE,
+            T.END_DATE
+    FROM {{ref('Q1_STG_VAS_PORTIN')}} T, {{ref('Q1_STG_VAS_PORTIN')}} T2
+    WHERE 1=1
+        AND T.ACCESS_NUMBER = T2.ACCESS_NUMBER
+        AND T.ORIGIN_COUNTRY = T2.ORIGIN_COUNTRY
+        AND T.PK_ID <> T2.PK_ID
+        AND T.START_DATE <= T2.END_DATE 
+        AND T.END_DATE >= T2.START_DATE
+    GROUP BY 1,2,3,4
+    )
