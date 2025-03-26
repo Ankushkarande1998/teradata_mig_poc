@@ -184,7 +184,7 @@ ON 1=1
             MAX(MP.MinimumPriceField) MINIMUM_PRICE
     FROM {{ref('CDO_IN_MIN_PRICE')}} MP
     WHERE 1=1
-    AND MP.START_DT BETWEEN TO_DATE('202502', 'yyyyMM') AND DATE_SUB(CURRENT_DATE(), 1)
+    AND MP.START_DT BETWEEN {{convert_start_date('202502')}} AND {{get_date_sub(1)}}
        --AND MP.START_DT BETWEEN (('2025-03-11' (DATE)) - INTERVAL '11' DAY) AND (('2025-03-11' (DATE)) - INTERVAL '1' DAY)
        AND MP.BASE_PRODUCT IN ('FIRST CLASS MOB', 'SIP', 'OTT')
     GROUP BY 1, 2, 3, 4
