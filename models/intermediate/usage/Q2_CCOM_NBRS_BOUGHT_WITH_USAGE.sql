@@ -15,7 +15,7 @@ FROM
     SELECT  CUST.OPER_CD AS CUST_OPER_CD,
             CUST.CTRY_CD AS CUST_CTRY_CD,
             --CC.CALL_DT - EXTRACT(DAY FROM CALL_DT) + 1 AS MONTHSTART,
-            TRUNC(CC.CALL_DT, 'MONTH') AS MONTHSTART,
+             {{ trunc_to_month('CC.CALL_DT') }} AS MONTHSTART,
             CASE WHEN CC.PRODUCT = 'SIPT' 
                     THEN 'IBN'
                     ELSE CC.PRODUCT
@@ -46,7 +46,7 @@ FROM
     SELECT  CUST.OPER_CD,
             CUST.CTRY_CD,
             --CC.CALL_DT - EXTRACT(DAY FROM CALL_DT) + 1 AS MONTHSTART,
-            TRUNC(CC.CALL_DT, 'MONTH') AS MONTHSTART,
+            {{ trunc_to_month('CC.CALL_DT') }} AS MONTHSTART,
             CASE WHEN CC.PRODUCT = 'SIPT'
                     THEN 'IBN'
                     ELSE CC.PRODUCT

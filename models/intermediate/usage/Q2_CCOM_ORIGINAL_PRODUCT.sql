@@ -7,9 +7,12 @@
 }}
 
 
-SELECT  A.CALL_DT,                A.A_NR,
-        A.IN_CDR_FILE_ID,         A.IN_CDR_SERIAL_NR,
-        A.OUT_CDR_FILE_ID,        A.OUT_CDR_SERIAL_NR,
+SELECT  A.CALL_DT,                
+        A.A_NR,
+        A.IN_CDR_FILE_ID,        
+        A.IN_CDR_SERIAL_NR,
+        A.OUT_CDR_FILE_ID,        
+        A.OUT_CDR_SERIAL_NR,
         IN_TGC.TGC_CD  AS IN_TGC_CD,
         OUT_TGC.TGC_CD AS OUT_TGC_CD,
         ISS.SUB_SVC_CD AS IN_DEST_SUB_SVC_CD,

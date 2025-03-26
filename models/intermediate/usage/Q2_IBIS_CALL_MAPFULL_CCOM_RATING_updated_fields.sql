@@ -9,7 +9,7 @@
 -- UPDATE CCOM Table
 -- TODO: list out all the columns
     SELECT 
-       A.CALL_DT,               
+    A.CALL_DT,               
     A.IN_CDR_FILE_ID,        
     A.IN_CDR_SERIAL_NR,
     A.IN_SEGMENT_DT,         

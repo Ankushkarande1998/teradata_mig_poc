@@ -5,13 +5,13 @@
 }}
 
 select
-  A.CALL_DT,              
+    A.CALL_DT,              
     A.IN_CDR_FILE_ID,        
     A.IN_CDR_SERIAL_NR,
     A.IN_SEGMENT_DT,        
     A.OUT_CDR_FILE_ID,      
     A.OUT_CDR_SERIAL_NR,
-  C.ONNET_OFFNET_FLAG,
+    C.ONNET_OFFNET_FLAG,
     C.VAS_PORT_IN,
     C.VAS_PORT_OUT,
     A.OUT_SEGMENT_DT,        
