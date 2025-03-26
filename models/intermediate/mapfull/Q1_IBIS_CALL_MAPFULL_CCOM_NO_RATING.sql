@@ -114,8 +114,8 @@ FROM
          {{ ref('IBIS_CALL_MAPFULL_IO') }} A
          LEFT OUTER JOIN {{ ref('CBU_RD_SPLIT_SUB_SERVICE') }} B ON COALESCE(A.IN_DEST_SUB_SVC_ID, A.OUT_DEST_SUB_SVC_ID) = B.SUB_SVC_ID
       WHERE
-         A.CALL_DT BETWEEN {{ get_date_sub("'2025-03-11'", 11) }}
-         AND {{ get_date_sub("'2025-03-11'", 1) }} --WHERE A.CALL_DT = '2025-03-11' (DATE)
+         A.CALL_DT BETWEEN {{ get_date_sub( 11) }}
+         AND {{ get_date_sub( 1) }} --WHERE A.CALL_DT = '2025-03-11' (DATE)
          AND (
             (
                A.IN_EXCHANGE_ID = 2101134
@@ -182,8 +182,8 @@ FROM
          {{ ref('IBIS_CALL_MAPFULL_UNM') }} A
          LEFT OUTER JOIN {{ ref('CBU_RD_SPLIT_SUB_SERVICE') }} B ON COALESCE(A.IN_DEST_SUB_SVC_ID, A.OUT_DEST_SUB_SVC_ID) = B.SUB_SVC_ID
       WHERE
-         A.CALL_DT BETWEEN {{ get_date_sub("'2025-03-11'", 11) }}
-         AND {{ get_date_sub("'2025-03-11'", 1) }}
+         A.CALL_DT BETWEEN {{ get_date_sub( 11) }}
+         AND {{ get_date_sub( 1) }}
          AND (
             (
                A.IN_EXCHANGE_ID = 2101134
@@ -212,18 +212,18 @@ FROM
             AND RECV_OPER_ID = 2113850 -- BEL/BICS
          )
    ) MIO
-   LEFT OUTER JOIN {{ ref('IBIS_CALL') }} IIC ON IIC.SEGMENT_DT BETWEEN {{ get_date_sub("'2025-03-11'", 12) }}
-   AND {{ get_date_sub("'2025-03-11'", 1) }}
-   AND IIC.CALL_DT BETWEEN {{ get_date_sub("'2025-03-11'", 11) }}
-   AND {{ get_date_sub("'2025-03-11'", 1) }}
+   LEFT OUTER JOIN {{ ref('IBIS_CALL') }} IIC ON IIC.SEGMENT_DT BETWEEN {{ get_date_sub(12) }}
+   AND {{ get_date_sub(1) }}
+   AND IIC.CALL_DT BETWEEN {{ get_date_sub( 11) }}
+   AND {{ get_date_sub( 1) }}
    AND IIC.CDR_SERIAL_NR = COALESCE(MIO.IN_CDR_SERIAL_NR, 1)
    AND IIC.CDR_FILE_ID = COALESCE(MIO.IN_CDR_FILE_ID, 1)
    AND IIC.SEGMENT_DT = COALESCE(MIO.IN_SEGMENT_DT, CAST('1900-01-01' AS DATE))
    AND IIC.MAIN_SVC_ID = 22
-   LEFT OUTER JOIN {{ ref('IBIS_CALL') }} OIC ON OIC.SEGMENT_DT BETWEEN {{ get_date_sub("'2025-03-11'", 12) }}
-   AND {{ get_date_sub("'2025-03-11'", 1) }}
-   AND OIC.CALL_DT BETWEEN {{ get_date_sub("'2025-03-11'", 11) }}
-   AND {{ get_date_sub("'2025-03-11'", 1) }}
+   LEFT OUTER JOIN {{ ref('IBIS_CALL') }} OIC ON OIC.SEGMENT_DT BETWEEN {{ get_date_sub( 12) }}
+   AND {{ get_date_sub( 1) }}
+   AND OIC.CALL_DT BETWEEN {{ get_date_sub( 11) }}
+   AND {{ get_date_sub( 1) }}
    AND OIC.CDR_SERIAL_NR = COALESCE(MIO.OUT_CDR_SERIAL_NR, 1)
    AND OIC.CDR_FILE_ID = COALESCE(MIO.OUT_CDR_FILE_ID, 1)
    AND OIC.SEGMENT_DT = COALESCE(MIO.OUT_SEGMENT_DT, CAST('1900-01-01' AS DATE))

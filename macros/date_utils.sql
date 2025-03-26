@@ -1,9 +1,9 @@
-{% macro get_date_sub(date_column, days) %}
+{% macro get_date_sub(days) %}
     {% if target.type == 'redshift' %}
-        DATEADD(DAY, -{{ days }}, {{ date_column }}::DATE)
+        DATEADD(DAY, -{{ days }}, CURRENT_DATE)
     {% elif target.type == 'databricks' %}
-        DATE_SUB(DATE({{ date_column }}), {{ days }})
+        DATE_SUB(CURRENT_DATE(), {{ days }})
     {% elif target.type == 'starburst' %}
-        {{ date_column }} - INTERVAL '{{ days }}' DAY
+        CURRENT_DATE - INTERVAL '{{ days }}' DAY
     {% endif %}
 {% endmacro %}
