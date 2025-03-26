@@ -20,3 +20,4 @@ models:
  teradata_mig_poc:
     marts:
       +materialized: table
+      +format: iceberg
