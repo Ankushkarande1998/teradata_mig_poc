@@ -10,7 +10,7 @@
 -- Delete in the IBIS_CALL_MAPFULL_CCOM_RATING Table the data was inserted above in the DUPL table (OUT CDRs)
 
 SELECT 
-    CALL_DT,
+CALL_DT,
 IN_CDR_FILE_ID,
 IN_CDR_SERIAL_NR,
 IN_SEGMENT_DT,
