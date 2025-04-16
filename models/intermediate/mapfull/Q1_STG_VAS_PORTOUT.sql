@@ -1,4 +1,4 @@
-{{set_starburst_config()}}
+{{set_starburst_portout_config()}}
 
 -- Optional note: If this table is useful in the future, consider persisting CALL_YEAR_MONTH + ACCESS_NUMBER + PORT_OUT_FLAG
 -- Otherwise, Qlik developers may query the source VAS_EXT_DM_RPT table directly.

@@ -3,8 +3,8 @@ databricks_transformation:
   outputs:
     dev:
       type: databricks
-      catalog: dbk_test_mart
-      schema: default
+      catalog: iceberg
+      schema: DWHIBIS
       host: dbc-79ebbc89-5c9b.cloud.databricks.com
       http_path: /sql/1.0/warehouses/ff6412facf18195d
       token: dapi24504d70f9482425e58edf9f9124a964
