@@ -1,8 +1,5 @@
---file 24
-{{ config(
-    materialized = 'table',
-    pre_hook = "DROP TABLE IF EXISTS {{ this }}"
-) }}
+{{ set_model_config() }}
+
 SELECT
     A.CALL_DT,
     A.A_NR,
@@ -80,4 +77,4 @@ FROM
     LEFT JOIN {{ ref('IBIS_TRUNK_GROUP_CLASS') }} OUT_TGC ON A.O_TGC_ID = OUT_TGC.TGC_ID
     LEFT OUTER JOIN {{ ref('IBIS_SUB_SERVICE') }} ISS ON A.IN_DEST_SUB_SVC_ID = ISS.SUB_SVC_ID
 GROUP BY
-    1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16;
+    1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16

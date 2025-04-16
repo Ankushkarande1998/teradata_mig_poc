@@ -3,7 +3,7 @@
         DATEADD(DAY, -{{ days }}, CURRENT_DATE)
     {% elif target.type == 'databricks' %}
         DATE_SUB(CURRENT_DATE(), {{ days }})
-    {% elif target.type == 'starburst' %}
+    {% elif target.type == 'trino' %}
         CURRENT_DATE - INTERVAL '{{ days }}' DAY
     {% endif %}
 {% endmacro %}
@@ -14,8 +14,8 @@
         TO_DATE({{date}}, 'YYYYMM')
     {% elif target.type == 'databricks' %}
         TO_DATE({{date}}, 'yyyyMM')
-    {% elif target.type == 'starburst' %}
-        DATE_PARSE({{date}}, '%Y%m')
+    {% elif target.type == 'trino' %}
+        date_parse(CAST({{date}} AS VARCHAR), '%Y%m')
     {% else %}
         '2025-02-01'  -- Default Fallback
     {% endif %}

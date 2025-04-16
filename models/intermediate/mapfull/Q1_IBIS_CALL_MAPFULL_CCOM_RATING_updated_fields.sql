@@ -1,9 +1,5 @@
---file 13
-{{ config(
-    materialized='table',
-    pre_hook="DROP TABLE IF EXISTS {{ this }}"
-    ) 
-}}
+{{ set_model_config() }}
+
 
 
 -- UPDATE CCOM Table

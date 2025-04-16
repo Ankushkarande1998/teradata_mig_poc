@@ -1,9 +1,5 @@
--- File: 16
-{{ config(
-    materialized='table',
-    pre_hook="DROP TABLE IF EXISTS {{ this }}"
-    ) 
-}}
+{{ set_model_config() }}
+
 
 -- REMOVE FROM DUPLICATES THE HANDLED ONES
 select 

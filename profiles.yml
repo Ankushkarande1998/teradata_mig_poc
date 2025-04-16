@@ -1,7 +1,7 @@
 databricks_transformation:
   target: dev
   outputs:
-   dev:
+    dev:
       type: databricks
       catalog: dbk_test_mart
       schema: default
@@ -53,12 +53,12 @@ starburst_transformation:
   outputs:
     dev:
       type: trino
-      host: your-starburst-host
+      host: localhost
       port: 8080
-      user: your_user
-      password: your_password
-      catalog: hive
-      schema: default
+      user: test
+      password: 123456
+      catalog: iceberg
+      schema: DWHIBIS
       threads: 4
       method: http
 

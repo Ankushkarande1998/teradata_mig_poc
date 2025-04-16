@@ -1,8 +1,5 @@
-{{ config(
-    materialized='table',
-    pre_hook="DROP TABLE IF EXISTS {{ this }}"
-    ) 
-}}
+{{ set_model_config() }}
+
 
 select
     A.CALL_DT,              
@@ -140,11 +137,7 @@ select
     A.IN_UNIT_TARIFF_EURO,
     A.IN_UNIT_TARIFF_SETUP_FEE_EURO,
     A.IN_AMOUNT_EURO,
-    A.IN_AMOUNT_SETUPFEE_EURO,
-    OUT_AMOUNT_EURO,
-    OUT_AMOUNT_SETUPFEE_EURO,
-    OUT_UNIT_TARIFF_EURO,
-    OUT_UNIT_TARIFF_SETUP_FEE_EURO
+    A.IN_AMOUNT_SETUPFEE_EURO
 from
 {{ref('Q1_IBIS_CALL_MAPFULL_CCOM_RATING_updated_fields')}} A
 left outer join

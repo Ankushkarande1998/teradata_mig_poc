@@ -1,10 +1,4 @@
-
---file 23
-{{ config(
-    materialized='table',
-    pre_hook="DROP TABLE IF EXISTS {{ this }}"
-    ) 
-}}
+{{ set_model_config() }}
 
 SELECT A.ACCESS_NUMBER AS ACCESS_NUMBER,
        MAX(A.CUSTOMER_POP) AS CUSTOMER_POP,

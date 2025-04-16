@@ -2,7 +2,7 @@
   {% if target.type == 'databricks' %}
     CAST(NULL AS VARCHAR({{ size }}))
   {% elif target.type == 'trino' or target.type == 'presto' %}
-    NULL::VARCHAR({{ size }})
+    CAST(NULL AS VARCHAR({{ size }}))
   {% else %}
     CAST(NULL AS VARCHAR({{ size }}))
   {% endif %}

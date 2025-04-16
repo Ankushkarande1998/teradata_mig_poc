@@ -1,10 +1,5 @@
--- File: 5
+{{ set_model_config() }}
 
-{{ config(
-    materialized='table',
-    pre_hook="DROP TABLE IF EXISTS {{ this }}"
-    ) 
-}}
 
 
 -- In case of double mappings, put the duplicates in a separate table

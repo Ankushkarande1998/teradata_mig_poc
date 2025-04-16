@@ -2,7 +2,7 @@
   {% if target.type == 'redshift' %}
     CAST(NULL AS INTEGER)  -- Redshift prefers INTEGER over INT
   {% elif target.type in ('trino', 'presto') %}
-    NULL::INTEGER  -- Starburst (Trino/Presto) allows "::" notation
+    CAST(NULL AS INT)  -- Default for Databricks and other databases
   {% else %}
     CAST(NULL AS INT)  -- Default for Databricks and other databases
   {% endif %}

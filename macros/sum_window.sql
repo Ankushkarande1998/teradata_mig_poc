@@ -1,5 +1,5 @@
 {% macro sum_window(column, partition_by) %}
-    {% if target.type == 'redshift' or target.type == 'starburst' %}
+    {% if target.type == 'redshift' or target.type == 'trino' %}
         SUM({{ column }}) OVER (PARTITION BY {{ partition_by }})
     {% elif target.type == 'databricks' %}
         SUM({{ column }}) OVER (PARTITION BY {{ partition_by }} ORDER BY NULL)

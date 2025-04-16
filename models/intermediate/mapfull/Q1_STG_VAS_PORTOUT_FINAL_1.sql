@@ -1,9 +1,6 @@
 
-{{ config(
-    materialized='table',
-    pre_hook="DROP TABLE IF EXISTS {{ this }}"
-    ) 
-}}
+{{ set_model_config() }}
+
 SELECT -1 AS PK_ID,
         ACCESS_NUMBER,
         LINK_ID,

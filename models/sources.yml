@@ -3,7 +3,7 @@ version: 2
 sources:
   - name: DWHIBIS
     description: "Parquet files stored in S3"
-    database: dbk_test_mart
+    database: iceberg  --dbt_test_mart for databricks
     schema: DWHIBIS
     tables:
       - name: IBIS_CALL
@@ -50,7 +50,7 @@ sources:
       
   - name: DWHODS
     description: "Additional schema in S3"
-    database: dbk_test_mart
+    database: iceberg  --dbt_test_mart for databricks
     schema: DWHODS
     tables:
       - name: CALENDAR

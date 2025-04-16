@@ -1,9 +1,5 @@
---file 15
-{{ config(
-    materialized='table',
-    pre_hook="DROP TABLE IF EXISTS {{ this }}"
-    ) 
-}}
+{{ set_model_config() }}
+
 
 -- INSERT DATA THAT IS NOT OVERLAPPED
 

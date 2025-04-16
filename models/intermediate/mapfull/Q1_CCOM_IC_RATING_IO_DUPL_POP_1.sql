@@ -1,9 +1,5 @@
--- File: 8
-{{ config(
-    materialized='table',
-    pre_hook="DROP TABLE IF EXISTS {{ this }}"
-    ) 
-}}
+{{ set_model_config() }}
+
 
 -- REMOVE FROM DUPLICATES THE HANDLED ONES
 SELECT 
@@ -150,4 +146,4 @@ SELECT
 FROM {{ref('Q1_CCOM_IC_RATING_IO_DUPL')}}
 WHERE (IN_CDR_FILE_ID, IN_CDR_SERIAL_NR)
 NOT IN (SELECT IN_CDR_FILE_ID, IN_CDR_SERIAL_NR FROM {{ref('Q1_CCOM_IC_RATING_IO_P_OP_1')}} 
-GROUP BY IN_CDR_FILE_ID, IN_CDR_SERIAL_NR);
+GROUP BY IN_CDR_FILE_ID, IN_CDR_SERIAL_NR)

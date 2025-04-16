@@ -1,9 +1,5 @@
---file 17
-{{ config(
-    materialized='table',
-    pre_hook="DROP TABLE IF EXISTS {{ this }}"
-    ) 
-}}
+{{ set_model_config() }}
+
 
 -- Now, for the remaing records that are overlapped (if any), we need to merge them
 -- As we will have Data Quality issues, we will do a MAX on LINK_ID and PORT_INwith

@@ -1,9 +1,6 @@
---file 13
-{{ config(
-    materialized='table',
-    pre_hook="DROP TABLE IF EXISTS {{ this }}"
-    ) 
-}}
+{{ set_model_config() }}
+
+
 
 --   In The Cloud COMM DM Report they want to see FCM in the Product instead of 'unknown'
 --   for the time being is NULL. so we need to hardcoded to FCM if i_tgc_id = 13 (M) and
@@ -91,7 +88,7 @@ FROM
             CASE
                 WHEN CC.IN_VAS_DIRECTION IS NULL AND CC.OUT_VAS_DIRECTION IS NULL AND (CC.O_TGC_ID=724 OR CC.I_TGC_ID=724) THEN 'SIPT'
                 WHEN CC.IN_VAS_DIRECTION IS NULL AND CC.OUT_VAS_DIRECTION IS NULL AND (CC.O_TGC_ID=619 OR CC.I_TGC_ID=619) THEN 'GMN'
-                WHEN DIRECTION_tmp = 'OUTBOUND' AND CC.I_TGC_ID = 13 AND CC.TRANSM_OPER_ID = 2195494 THEN 'FCM' -- For USA/AMAZCO Only
+                WHEN COALESCE(COALESCE(CC.IN_VAS_DIRECTION,CC.OUT_VAS_DIRECTION),'OUTBOUND') = 'OUTBOUND' AND CC.I_TGC_ID = 13 AND CC.TRANSM_OPER_ID = 2195494 THEN 'FCM' -- For USA/AMAZCO Only
                 WHEN CC.IN_VAS_PRODUCT IS NULL AND CC.OUT_VAS_PRODUCT IS NOT NULL
                         THEN CC.OUT_VAS_PRODUCT
                         ELSE CC.IN_VAS_PRODUCT
@@ -101,9 +98,9 @@ FROM
             -- For INBOUND + FF800 (IN) OR FF800(OUT) --> RECV_CTRY_CD or DEST_CTRY_CD
             --     OTHERWISE --> ABS_EXP.ORIGIN_CTRY_CD
  
-            CASE  WHEN DIRECTION_tmp = 'OUTBOUND'
+            CASE  WHEN COALESCE(COALESCE(CC.IN_VAS_DIRECTION,CC.OUT_VAS_DIRECTION),'OUTBOUND') = 'OUTBOUND'
                      THEN  ADD_ORIG_OPER.CTRY_CD
-                  WHEN DIRECTION_tmp = 'INBOUND' AND CC.DEST_SUB_SVC_CD = 'FF800'
+                  WHEN COALESCE(COALESCE(CC.IN_VAS_DIRECTION,CC.OUT_VAS_DIRECTION),'OUTBOUND') = 'INBOUND' AND CC.DEST_SUB_SVC_CD = 'FF800'
                      --AND COALESCE(IN_DEST_SUB_SVC_ID,0) = 2107838 -- FF800
                      --AND COALESCE(OUT_DEST_SUB_SVC_ID,0) = 2107838 -- FF800
                         -- If Dummy Operator (Ex: USA/USA or If OPER_ID = 0 (NO/TKG) then RECV else DEST
@@ -134,7 +131,7 @@ FROM
  
             -- If Dummy Operator (Ex: USA/USA or If OPER_ID = 0 (NO/TKG) then RECV else DEST
             CASE WHEN (DEST_OPER.CTRY_CD = DEST_OPER.OPER_CD) OR DEST_OPER.OPER_ID = 0
-                    THEN RECV_OPER
+                    THEN RECV_OPER.CTRY_CD || '/' || RECV_OPER.OPER_CD
                     ELSE DEST_OPER.CTRY_CD || '/' || DEST_OPER.OPER_CD
             END AS DEST_OPER_Swap,
  
@@ -156,7 +153,8 @@ FROM
             ADD_ORIG_OPER.OPER_CD AS ADD_ORIG_OPER_CD,
  
              -- Defining the Customer
-            CASE WHEN DIRECTION = 'INBOUND' AND FF_FLAG = 1
+            CASE WHEN DIRECTION = 'INBOUND' AND COALESCE(IN_DEST_SUB_SVC_ID, 0) NOT IN (2107838,2113163,2113162)
+                  AND COALESCE(OUT_DEST_SUB_SVC_ID, 0) NOT IN (2107838,2113163,2113162)
                   THEN CASE WHEN (DEST_OPER.CTRY_CD = DEST_OPER.OPER_CD) OR DEST_OPER.OPER_ID = 0
                     THEN RECV_OPER_ID
                     ELSE DEST_OPER.OPER_ID
@@ -165,43 +163,50 @@ FROM
             END AS CUSTOMER_OPER_ID,
         
             -- Defining the Supplier
-            CASE WHEN DIRECTION = 'INBOUND' AND FF_FLAG = 1
+            CASE WHEN DIRECTION = 'INBOUND' AND COALESCE(IN_DEST_SUB_SVC_ID, 0) NOT IN (2107838,2113163,2113162)
+                  AND COALESCE(OUT_DEST_SUB_SVC_ID, 0) NOT IN (2107838,2113163,2113162)
                     THEN CC.TRANSM_OPER_ID
                     ELSE CC.RECV_OPER_ID
             END AS SUPPL_OPER_ID,
  
             -- New Customer TGC
-            CASE WHEN DIRECTION = 'INBOUND' AND FF_FLAG = 0 --(FLAG = 0 means FF800 / FF/999 / FF/998)
+            CASE WHEN DIRECTION = 'INBOUND' AND COALESCE(IN_DEST_SUB_SVC_ID, 0) IN (2107838,2113163,2113162)
+                  AND COALESCE(OUT_DEST_SUB_SVC_ID, 0) IN (2107838,2113163,2113162) --(FLAG = 0 means FF800 / FF/999 / FF/998)
                     THEN CC.O_TGC_ID
                     ELSE CC.I_TGC_ID -- OUTBOUND or ('INBOUND' AND FF_FLAG = 1)
             END AS CUST_TGC_ID_Final,
  
             -- New Supplier TGC
-            CASE WHEN DIRECTION = 'INBOUND' AND FF_FLAG = 0 --(FLAG = 0 means FF800 / FF/999 / FF/998)
+            CASE WHEN DIRECTION = 'INBOUND' AND COALESCE(IN_DEST_SUB_SVC_ID, 0) IN (2107838,2113163,2113162)
+                  AND COALESCE(OUT_DEST_SUB_SVC_ID, 0) IN (2107838,2113163,2113162) --(FLAG = 0 means FF800 / FF/999 / FF/998)
                     THEN CC.I_TGC_ID
                     ELSE CC.O_TGC_ID -- OUTBOUND or ('INBOUND' AND FF_FLAG = 1)
             END AS SUPPL_TGC_ID_Final,
  
             -- Customer Currency
-            CASE WHEN DIRECTION = 'INBOUND' AND FF_FLAG = 1
+            CASE WHEN DIRECTION = 'INBOUND' AND COALESCE(IN_DEST_SUB_SVC_ID, 0) NOT IN (2107838,2113163,2113162)
+                  AND COALESCE(OUT_DEST_SUB_SVC_ID, 0) NOT IN (2107838,2113163,2113162)
                     THEN CC.OUT_CURRENCY_ID
                     ELSE CC.IN_CURRENCY_ID
             END AS CUST_CURRENCY_ID_Final,
  
             -- Supplier Currency
-            CASE WHEN DIRECTION = 'INBOUND' AND FF_FLAG = 1
+            CASE WHEN DIRECTION = 'INBOUND' AND COALESCE(IN_DEST_SUB_SVC_ID, 0) NOT IN (2107838,2113163,2113162)
+                  AND COALESCE(OUT_DEST_SUB_SVC_ID, 0) NOT IN (2107838,2113163,2113162)
                     THEN CC.IN_CURRENCY_ID
                     ELSE CC.OUT_CURRENCY_ID
             END AS SUPPL_CURRENCY_ID_Final,
  
             -- Customer DEST_SUB_SVC_ID
-            CASE WHEN DIRECTION = 'INBOUND' AND FF_FLAG = 1
+            CASE WHEN DIRECTION = 'INBOUND' AND COALESCE(IN_DEST_SUB_SVC_ID, 0) NOT IN (2107838,2113163,2113162)
+                  AND COALESCE(OUT_DEST_SUB_SVC_ID, 0) NOT IN (2107838,2113163,2113162)
                     THEN CC.IN_DEST_SUB_SVC_ID
                     ELSE CC.OUT_DEST_SUB_SVC_ID
             END AS CUST_DEST_SUB_SVC_ID_Final,
  
             -- Supplier DEST_SUB_SVC_ID
-            CASE WHEN DIRECTION = 'INBOUND' AND FF_FLAG = 1
+            CASE WHEN DIRECTION = 'INBOUND' AND COALESCE(IN_DEST_SUB_SVC_ID, 0) NOT IN (2107838,2113163,2113162)
+                  AND COALESCE(OUT_DEST_SUB_SVC_ID, 0) NOT IN (2107838,2113163,2113162)
                     THEN CC.OUT_DEST_SUB_SVC_ID
                     ELSE CC.IN_DEST_SUB_SVC_ID
             END AS SUPPL_DEST_SUB_SVC_ID_Final

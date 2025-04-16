@@ -2,7 +2,7 @@
   {% if target.type == 'databricks' %}
     CAST(NULL AS DECIMAL({{ precision }}, {{ scale }}))
   {% elif target.type in ('trino', 'presto') %}
-    NULL::DECIMAL({{ precision }}, {{ scale }})
+    CAST(NULL AS DECIMAL({{ precision }}, {{ scale }}))
   {% else %}
     CAST(NULL AS DECIMAL({{ precision }}, {{ scale }}))
   {% endif %}

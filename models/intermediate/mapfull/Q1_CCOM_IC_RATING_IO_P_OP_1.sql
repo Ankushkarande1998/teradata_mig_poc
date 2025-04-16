@@ -1,9 +1,4 @@
--- File: 7
-{{ config(
-    materialized='table',
-    pre_hook="DROP TABLE IF EXISTS {{ this }}"
-    ) 
-}}
+{{ set_model_config() }}
 
 
 -- Handle Duplicates due to Peak Off Peak cases

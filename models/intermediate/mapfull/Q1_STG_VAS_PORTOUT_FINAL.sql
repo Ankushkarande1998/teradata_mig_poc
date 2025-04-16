@@ -1,9 +1,5 @@
---file 19
-{{ config(
-    materialized='table',
-    pre_hook="DROP TABLE IF EXISTS {{ this }}"
-    ) 
-}}
+{{ set_model_config() }}
+
 
 -- INSERT DATA THAT IS NOT OVERLAPPED
 SELECT * FROM {{ref('Q1_STG_VAS_PORTOUT')}}

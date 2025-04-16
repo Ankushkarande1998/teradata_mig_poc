@@ -1,9 +1,4 @@
--- File: 10
-{{ config(
-    materialized='table',
-    pre_hook="DROP TABLE IF EXISTS {{ this }}"
-    ) 
-}}
+{{ set_model_config() }}
 
 
 with pop_4_raw_data as(

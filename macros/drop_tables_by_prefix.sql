@@ -8,12 +8,29 @@
     {% endset %}
 
     {% set results = run_query(query) %}
+    
     {% if results %}
         {% for row in results %}
             {% set table_name = row['table_name'] %}
-            {% set drop_command %}
-                DROP TABLE IF EXISTS {{ target.database }}.{{ target.schema }}.{{ table_name }}
-            {% endset %}
+            
+            {% if target.type == 'redshift' %}
+                {% set drop_command %}
+                    DROP TABLE IF EXISTS {{ target.schema }}.{{ table_name }}
+                {% endset %}
+            {% elif target.type == 'databricks' %}
+                {% set drop_command %}
+                    DROP TABLE IF EXISTS {{ target.database }}.{{ target.schema }}.{{ table_name }}
+                {% endset %}
+            {% elif target.type == 'starburst' %}
+                {% set drop_command %}
+                    DROP TABLE IF EXISTS {{ target.schema }}.{{ table_name }}
+                {% endset %}
+            {% else %}
+                {% set drop_command %}
+                    DROP TABLE IF EXISTS {{ target.schema }}.{{ table_name }}
+                {% endset %}
+            {% endif %}
+            
             {{ log(drop_command, info=true) }}
             {% do run_query(drop_command) %}
         {% endfor %}

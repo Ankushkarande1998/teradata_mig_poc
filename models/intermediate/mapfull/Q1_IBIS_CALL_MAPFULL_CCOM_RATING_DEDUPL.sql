@@ -1,10 +1,5 @@
--- File: 6
+{{ set_model_config() }}
 
-{{ config(
-    materialized='table',
-    pre_hook="DROP TABLE IF EXISTS {{ this }}"
-    ) 
-}}
 
 -- Delete in the IBIS_CALL_MAPFULL_CCOM_RATING Table the data was inserted above in the DUPL table (IN CDRs)
 -- Delete in the IBIS_CALL_MAPFULL_CCOM_RATING Table the data was inserted above in the DUPL table (OUT CDRs)

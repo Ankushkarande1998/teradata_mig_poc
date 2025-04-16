@@ -1,8 +1,5 @@
--- File: 1
-{{ config(
-   materialized = 'table',
-   pre_hook = "DROP TABLE IF EXISTS {{ this }}"
-) }}
+{{ set_model_config() }}
+
 SELECT
    MIO.CALL_DT,
    MIO.IN_CDR_FILE_ID,
@@ -122,7 +119,7 @@ FROM
                OR A.OUT_EXCHANGE_ID = 2101134
             ) --CCOM
             OR (
-               B.SUB_SVC_CD LIKE ANY ('%IFT%', '%FF%', '%SCS%', '%IGEO%', 'FRING', 'GMN%')
+               {{ like_any('B.SUB_SVC_CD', ['%IFT%', '%FF%', '%SCS%', '%IGEO%', 'FRING', 'GMN%']) }}
             )
          )
          AND NOT (
@@ -141,7 +138,7 @@ FROM
                   AND CTRY_CD <> 'BEL'
             )
             AND A.I_TGC_ID = 654 -- BHN
-            AND RECV_OPER_ID = 2113850 -- BEL/BICS
+            AND A.RECV_OPER_ID = 2113850 -- BEL/BICS
          )
       UNION
       SELECT
@@ -190,7 +187,7 @@ FROM
                OR A.OUT_EXCHANGE_ID = 2101134
             ) --CCOM
             OR (
-               B.SUB_SVC_CD LIKE ANY ('%IFT%', '%FF%', '%SCS%', '%IGEO%', 'FRING', 'GMN%')
+               {{ like_any('B.SUB_SVC_CD', ['%IFT%', '%FF%', '%SCS%', '%IGEO%', 'FRING', 'GMN%']) }}
             )
          )
          AND NOT (
@@ -209,7 +206,7 @@ FROM
                   AND CTRY_CD <> 'BEL'
             )
             AND A.I_TGC_ID = 654 -- BHN
-            AND RECV_OPER_ID = 2113850 -- BEL/BICS
+            AND A.RECV_OPER_ID = 2113850 -- BEL/BICS
          )
    ) MIO
    LEFT OUTER JOIN {{ ref('IBIS_CALL') }} IIC ON IIC.SEGMENT_DT BETWEEN {{ get_date_sub(12) }}
